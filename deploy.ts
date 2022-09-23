@@ -1,15 +1,13 @@
-const ethers = require("ethers");
-const fs = require("fs-extra");
-require("dotenv").config();
+import ethers from "ethers";
+import fs from "fs-extra";
+import "dotenv/config";
 
 const main = async () => {
   // compile them in our code
   // compile them separately
   // http://127.0.0.1:7545
-  const provider = new ethers.providers.JsonRpcProvider(
-    "http://127.0.0.1:7545"
-  );
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+  const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
   const abi = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.abi", "utf-8");
   const binary = fs.readFileSync(
     "./SimpleStorage_sol_SimpleStorage.bin",
@@ -18,7 +16,8 @@ const main = async () => {
   const contractFactory = new ethers.ContractFactory(abi, binary, wallet);
   console.log("Deploying, please wait...");
   const contract = await contractFactory.deploy();
-  console.log(contract);
+  const deploymentReceipt = await contract.deployTransaction.wait(1);
+  console.log(deploymentReceipt);
 };
 
 const runMain = async () => {

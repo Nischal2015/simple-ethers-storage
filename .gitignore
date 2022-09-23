@@ -2,3 +2,4 @@ node_modules/
 *abi
 *bin
 .env
+dist/
