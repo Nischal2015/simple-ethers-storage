@@ -12,7 +12,7 @@
   "type": "module",
   "scripts": {
     "compile": "yarn solcjs --bin --abi --include-path node_modules --base-path . -o . SimpleStorage.sol",
-    "run": "tsc && node ./dist/deploy.js"
+    "deploy": "tsc && node ./dist/deploy.js"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
