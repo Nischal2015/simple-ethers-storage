@@ -3,28 +3,38 @@ import fs from "fs-extra";
 import "dotenv/config";
 
 const main = async () => {
-  // compile them in our code
-  // compile them separately
-  // http://127.0.0.1:7545
-  const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-  const abi = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.abi", "utf-8");
-  const binary = fs.readFileSync(
-    "./SimpleStorage_sol_SimpleStorage.bin",
-    "utf-8"
-  );
-  const contractFactory = new ethers.ContractFactory(abi, binary, wallet);
-  console.log("Deploying, please wait...");
-  const contract = await contractFactory.deploy();
-  await contract.deployTransaction.wait(1);
+    // compile them in our code
+    // compile them separately
+    // http://127.0.0.1:7545
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+    // const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+    const encryptedJson = fs.readFileSync("./.encryptedKey.json", "utf-8");
+    const wallet = await new (ethers.Wallet.fromEncryptedJsonSync as any)(
+        encryptedJson,
+        process.env.PRIVATE_KEY_PASSWORD!
+    ).connect(provider);
+    console.log(wallet);
+    const abi = fs.readFileSync(
+        "./SimpleStorage_sol_SimpleStorage.abi",
+        "utf-8"
+    );
+    const binary = fs.readFileSync(
+        "./SimpleStorage_sol_SimpleStorage.bin",
+        "utf-8"
+    );
+    const contractFactory = new ethers.ContractFactory(abi, binary, wallet);
+    console.log("Deploying, please wait...");
+    const contract = await contractFactory.deploy();
+    await contract.deployTransaction.wait(1);
+    console.log(`Contract address: ${contract.address}`);
 
-  // console.log("Here is the deployment transaction");
-  // console.log(contract.deployTransaction);
+    // console.log("Here is the deployment transaction");
+    // console.log(contract.deployTransaction);
 
-  // console.log("Here is the transaction receipt");
-  // console.log(transactionReceipt);
+    // console.log("Here is the transaction receipt");
+    // console.log(transactionReceipt);
 
-  /*
+    /*
   RAW TRANSACTION APPROACH
   console.log("Let's deploy with only transaction data!");
 
@@ -52,24 +62,28 @@ const main = async () => {
   console.log(sendTxResponse);
   */
 
-  // Get Number
-  const currentFavouriteNumber = await contract.retrieve();
-  console.log(`Current Favourite Number: ${currentFavouriteNumber.toString()}`);
+    // Get Number
+    const currentFavouriteNumber = await contract.retrieve();
+    console.log(
+        `Current Favourite Number: ${currentFavouriteNumber.toString()}`
+    );
 
-  const transactionResponse = await contract.store("7868");
-  const transactionReceipt = await transactionResponse.wait(1);
-  const updatedFavouriteNumber = await contract.retrieve();
-  console.log(`Updated Favourite Number: ${updatedFavouriteNumber.toString()}`);
+    const transactionResponse = await contract.store("7868");
+    const transactionReceipt = await transactionResponse.wait(1);
+    const updatedFavouriteNumber = await contract.retrieve();
+    console.log(
+        `Updated Favourite Number: ${updatedFavouriteNumber.toString()}`
+    );
 };
 
 const runMain = async () => {
-  try {
-    await main();
-    process.exit(0);
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
+    try {
+        await main();
+        process.exit(0);
+    } catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
 };
 
 runMain();
